@@ -240,7 +240,8 @@ func (c *Ctx) UsePrivateKey(key PrivateKey) error {
 }
 
 type CertificateStore struct {
-	store *C.X509_STORE
+	store    *C.X509_STORE
+	storeCtx *C.X509_STORE_CTX
 	// for GC
 	ctx   *Ctx
 	certs []*Certificate
@@ -252,9 +253,16 @@ func NewCertificateStore() (*CertificateStore, error) {
 	if s == nil {
 		return nil, errors.New("failed to allocate X509_STORE")
 	}
-	store := &CertificateStore{store: s}
+
+	ctx := C.X509_STORE_CTX_new()
+	if ctx == nil {
+		return nil, errors.New("failed to allocate X509_STORE_CTX")
+	}
+
+	store := &CertificateStore{store: s, storeCtx: ctx}
 	runtime.SetFinalizer(store, func(s *CertificateStore) {
 		C.X509_STORE_free(s.store)
+		C.X509_STORE_CTX_free(s.storeCtx)
 	})
 	return store, nil
 }
@@ -565,4 +573,14 @@ func (c *Ctx) SessSetCacheSize(t int) int {
 // https://www.openssl.org/docs/ssl/SSL_CTX_sess_set_cache_size.html
 func (c *Ctx) SessGetCacheSize() int {
 	return int(C.X_SSL_CTX_sess_get_cache_size(c.ctx))
+}
+
+func (cs *CertificateStore) InitStore(cert *Certificate) error {
+	if int(C.X509_STORE_CTX_init(cs.storeCtx, cs.store, cert.x, nil)) != 1 {
+		return errorFromErrorQueue()
+	}
+	if (C.X509_verify_cert(cs.storeCtx)) != 1 {
+		return errorFromErrorQueue()
+	}
+	return nil
 }

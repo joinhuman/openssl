@@ -577,9 +577,11 @@ func (c *Ctx) SessGetCacheSize() int {
 
 func (cs *CertificateStore) InitStore(cert *Certificate) error {
 	if int(C.X509_STORE_CTX_init(cs.storeCtx, cs.store, cert.x, nil)) != 1 {
+		fmt.Printf("cannot load ctx\n")
 		return errorFromErrorQueue()
 	}
 	if (C.X509_verify_cert(cs.storeCtx)) != 1 {
+		fmt.Printf("cannot verify\n")
 		return errorFromErrorQueue()
 	}
 	return nil

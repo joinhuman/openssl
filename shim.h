@@ -170,3 +170,6 @@ extern int X_X509_set_version(X509 *x, long version);
 
 /* PEM methods */
 extern int X_PEM_write_bio_PrivateKey_traditional(BIO *bio, EVP_PKEY *key, const EVP_CIPHER *enc, unsigned char *kstr, int klen, pem_password_cb *cb, void *u);
+//extern const EVP_MD *X_EVP_MD_CTX_get0_md(const EVP_MD_CTX *ctx);
+//extern EVP_PKEY_CTX *X_EVP_PKEY_CTX_new_from_pkey(OSSL_LIB_CTX *libctx, EVP_PKEY *pkey, const char *propquery);
+extern int X_EVP_VerifyFinal_ex(EVP_MD_CTX *ctx, const unsigned char *sigbuf, unsigned int siglen, EVP_PKEY *pkey);

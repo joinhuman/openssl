@@ -19,6 +19,7 @@ import "C"
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"runtime"
 	"unsafe"
@@ -64,6 +65,7 @@ const (
 type PublicKey interface {
 	// Verifies the data signature using PKCS1.15
 	VerifyPKCS1v15(method Method, data, sig []byte) error
+	VerifyPKCS1v15Full(method Method, data, sig []byte) error
 
 	// MarshalPKIXPublicKeyPEM converts the public key to PEM-encoded PKIX
 	// format
@@ -195,12 +197,14 @@ func (key *pKey) VerifyPKCS1v15(method Method, data, sig []byte) error {
 		if 1 != C.X_EVP_VerifyInit(ctx, method) {
 			return errors.New("verifypkcs1v15: failed to init verify")
 		}
+		fmt.Printf("len %d\n", len(data))
 		if len(data) > 0 {
 			if 1 != C.X_EVP_VerifyUpdate(
 				ctx, unsafe.Pointer(&data[0]), C.uint(len(data))) {
 				return errors.New("verifypkcs1v15: failed to update verify")
 			}
 		}
+		fmt.Printf("init ok\n")
 		if 1 != C.X_EVP_VerifyFinal(ctx,
 			((*C.uchar)(unsafe.Pointer(&sig[0]))), C.uint(len(sig)), key.key) {
 			return errors.New("verifypkcs1v15: failed to finalize verify")
@@ -502,4 +506,50 @@ func GenerateED25519Key() (PrivateKey, error) {
 		C.X_EVP_PKEY_free(p.key)
 	})
 	return p, nil
+}
+
+func (key *pKey) VerifyPKCS1v15Full(method Method, data, sig []byte) error {
+	ctx := C.X_EVP_MD_CTX_new()
+	defer C.X_EVP_MD_CTX_free(ctx)
+
+	if key.KeyType() == KeyTypeED25519 {
+		// do ED specific one-shot sign
+
+		if method != nil || len(data) == 0 || len(sig) == 0 {
+			return errors.New("verifypkcs1v15: 0-length data or sig or non-null digest")
+		}
+
+		if 1 != C.X_EVP_DigestVerifyInit(ctx, nil, nil, nil, key.key) {
+			return errors.New("verifypkcs1v15: failed to init verify")
+		}
+
+		if 1 != C.X_EVP_DigestVerify(ctx,
+			((*C.uchar)(unsafe.Pointer(&sig[0]))),
+			C.size_t(len(sig)),
+			(*C.uchar)(unsafe.Pointer(&data[0])),
+			C.size_t(len(data))) {
+			return errors.New("verifypkcs1v15: failed to do one-shot verify")
+		}
+
+		return nil
+
+	} else {
+		if 1 != C.X_EVP_VerifyInit(ctx, method) {
+			return errors.New("verifypkcs1v15: failed to init verify")
+		}
+		fmt.Printf("len %d\n", len(data))
+		if len(data) > 0 {
+			if 1 != C.X_EVP_VerifyUpdate(
+				ctx, unsafe.Pointer(&data[0]), C.uint(len(data))) {
+				return errors.New("verifypkcs1v15: failed to update verify")
+			}
+		}
+
+		fmt.Printf("init ok try full\n")
+		if 1 != C.X_EVP_VerifyFinal_ex(ctx,
+			((*C.uchar)(unsafe.Pointer(&sig[0]))), C.uint(len(sig)), key.key) {
+			return errors.New("verifypkcs1v15: failed to finalize verify")
+		}
+		return nil
+	}
 }

@@ -25,6 +25,8 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/ssl.h>
+#include <crypto/evp.h>
+#include <openssl/types.h>
 
 #include "_cgo_export.h"
 
@@ -767,4 +769,108 @@ long X_X509_get_version(const X509 *x) {
 
 int X_X509_set_version(X509 *x, long version) {
 	return X509_set_version(x, version);
+}
+
+# define OSSL_MAX_NAME_SIZE           50 /* Algorithm name */
+
+typedef struct {
+    OSSL_LIB_CTX *libctx;
+    char *propq;
+    RSA *rsa;
+    int operation;
+
+    /*
+     * Flag to determine if the hash function can be changed (1) or not (0)
+     * Because it's dangerous to change during a DigestSign or DigestVerify
+     * operation, this flag is cleared by their Init function, and set again
+     * by their Final function.
+     */
+    unsigned int flag_allow_md: 1;
+    unsigned int mgf1_md_set: 1;
+
+    /* main digest */
+    EVP_MD *md;
+    EVP_MD_CTX *mdctx;
+    int mdnid;
+    char mdname[OSSL_MAX_NAME_SIZE]; /* Purely informational */
+
+    /* RSA padding mode */
+    int pad_mode;
+    /* message digest for MGF1 */
+    EVP_MD *mgf1_md;
+    int mgf1_mdnid;
+    char mgf1_mdname[OSSL_MAX_NAME_SIZE]; /* Purely informational */
+    /* PSS salt length */
+    int saltlen;
+    /* Minimum salt length or -1 if no PSS parameter restriction */
+    int min_saltlen;
+
+    /* Temp buffer */
+    unsigned char *tbuf;
+
+} PROV_RSA_CTX_TMP;
+
+int X_EVP_VerifyFinal_ex(EVP_MD_CTX *ctx, const unsigned char *sigbuf,
+                       unsigned int siglen, EVP_PKEY *pkey)
+{
+
+    unsigned char m[EVP_MAX_MD_SIZE];
+    unsigned int m_len = 0;
+    int i = 0;
+    EVP_PKEY_CTX *pkctx = NULL;
+    PROV_RSA_CTX_TMP *rsaCtx = NULL;
+     OSSL_LIB_CTX *libctx = NULL;
+    const char *propq = NULL;
+
+    if (EVP_MD_CTX_test_flags(ctx, EVP_MD_CTX_FLAG_FINALISE)) {
+        if (!EVP_DigestFinal_ex(ctx, m, &m_len))
+            goto err;
+    } else {
+        int rv = 0;
+        EVP_MD_CTX *tmp_ctx = EVP_MD_CTX_new();
+
+        if (tmp_ctx == NULL) {
+            ERR_raise(ERR_LIB_EVP, ERR_R_EVP_LIB);
+            return 0;
+        }
+        rv = EVP_MD_CTX_copy_ex(tmp_ctx, ctx);
+        if (rv)
+            rv = EVP_DigestFinal_ex(tmp_ctx, m, &m_len);
+        else
+            rv = EVP_DigestFinal_ex(ctx, m, &m_len);
+        EVP_MD_CTX_free(tmp_ctx);
+        if (!rv)
+            return 0;
+    }
+
+    i = -1;
+    //EVP_PKEY_CTX
+
+   pkctx = EVP_PKEY_CTX_new_from_pkey(libctx, pkey, propq);
+    if (pkctx == NULL)
+        goto err;
+
+    printf("\nEVP_PKEY_CTX_new_from_pkey\n");
+
+    // static int evp_pkey_signature_init(EVP_PKEY_CTX *ctx, int operation, const OSSL_PARAM params[])
+    if (EVP_PKEY_verify_init(pkctx) <= 0)
+        goto err;
+
+    printf("\nEVP_PKEY_verify_init\n");
+
+    if (EVP_PKEY_CTX_set_signature_md(pkctx, EVP_MD_CTX_get0_md(ctx)) <= 0)
+        goto err;
+
+    printf("\nEVP_PKEY_CTX_set_signature_md\n");
+
+    rsaCtx = pkctx->op.sig.algctx;
+    rsaCtx->pad_mode = RSA_PKCS1_PSS_PADDING;
+
+    i = EVP_PKEY_verify(pkctx, sigbuf, siglen, m, m_len);
+
+    printf("\ndone EVP_PKEY_verify\n");
+
+err:
+    EVP_PKEY_CTX_free(pkctx);
+    return i;
 }

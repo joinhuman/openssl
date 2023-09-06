@@ -26,7 +26,7 @@
 #include <openssl/evp.h>
 #include <openssl/ssl.h>
 //#include <crypto/evp.h>
-#include <openssl/types.h>
+//#include <openssl/types.h>
 
 struct evp_pkey_ctx_st {
     /* Actual operation */
@@ -130,6 +130,7 @@ struct evp_pkey_ctx_st {
      */
     BIGNUM *rsa_pubexp;
 } /* EVP_PKEY_CTX */ ;
+
 
 #include "_cgo_export.h"
 

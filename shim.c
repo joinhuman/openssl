@@ -28,18 +28,17 @@
 //#include <crypto/evp.h>
 //#include <openssl/types.h>
 
+/*
 struct evp_pkey_ctx_st {
-    /* Actual operation */
+    // Actual operation
     int operation;
 
-    /*
-     * Library context, property query, keytype and keymgmt associated with
-     * this context
-     */
+    // * Library context, property query, keytype and keymgmt associated with
+    // * this context
     OSSL_LIB_CTX *libctx;
     char *propquery;
     const char *keytype;
-    /* If |pkey| below is set, this field is always a reference to its keymgmt */
+    // If |pkey| below is set, this field is always a reference to its keymgmt
     EVP_KEYMGMT *keymgmt;
 
     union {
@@ -49,88 +48,88 @@ struct evp_pkey_ctx_st {
 
         struct {
             EVP_KEYEXCH *exchange;
-            /*
-             * Opaque ctx returned from a providers exchange algorithm
-             * implementation OSSL_FUNC_keyexch_newctx()
-             */
+
+             // * Opaque ctx returned from a providers exchange algorithm
+             // * implementation OSSL_FUNC_keyexch_newctx()
+
             void *algctx;
         } kex;
 
         struct {
             EVP_SIGNATURE *signature;
-            /*
-             * Opaque ctx returned from a providers signature algorithm
-             * implementation OSSL_FUNC_signature_newctx()
-             */
+
+             // * Opaque ctx returned from a providers signature algorithm
+             // * implementation OSSL_FUNC_signature_newctx()
+
             void *algctx;
         } sig;
 
         struct {
             EVP_ASYM_CIPHER *cipher;
-            /*
-             * Opaque ctx returned from a providers asymmetric cipher algorithm
-             * implementation OSSL_FUNC_asym_cipher_newctx()
-             */
+
+             // * Opaque ctx returned from a providers asymmetric cipher algorithm
+             // * implementation OSSL_FUNC_asym_cipher_newctx()
+
             void *algctx;
         } ciph;
         struct {
             EVP_KEM *kem;
-            /*
-             * Opaque ctx returned from a providers KEM algorithm
-             * implementation OSSL_FUNC_kem_newctx()
-             */
+
+             // * Opaque ctx returned from a providers KEM algorithm
+             // * implementation OSSL_FUNC_kem_newctx()
+
             void *algctx;
         } encap;
     } op;
 
-    /*
-     * Cached parameters.  Inits of operations that depend on these should
-     * call evp_pkey_ctx_use_delayed_data() when the operation has been set
-     * up properly.
-     */
-    struct {
-        /* Distinguishing Identifier, ISO/IEC 15946-3, FIPS 196 */
-        char *dist_id_name; /* The name used with EVP_PKEY_CTX_ctrl_str() */
-        void *dist_id;      /* The distinguishing ID itself */
-        size_t dist_id_len; /* The length of the distinguishing ID */
 
-        /* Indicators of what has been set.  Keep them together! */
+     // * Cached parameters.  Inits of operations that depend on these should
+     // * call evp_pkey_ctx_use_delayed_data() when the operation has been set
+     // * up properly.
+
+    struct {
+        // Distinguishing Identifier, ISO/IEC 15946-3, FIPS 196
+        char *dist_id_name; // The name used with EVP_PKEY_CTX_ctrl_str()
+        void *dist_id;      // The distinguishing ID itself
+        size_t dist_id_len; // The length of the distinguishing ID
+
+        // Indicators of what has been set.  Keep them together!
         unsigned int dist_id_set : 1;
     } cached_parameters;
 
-    /* Application specific data, usually used by the callback */
+    // Application specific data, usually used by the callback
     void *app_data;
-    /* Keygen callback */
+    // Keygen callback
     EVP_PKEY_gen_cb *pkey_gencb;
-    /* implementation specific keygen data */
+    // implementation specific keygen data
     int *keygen_info;
     int keygen_info_count;
 
-    /* Legacy fields below */
+    // Legacy fields below
 
-    /* EVP_PKEY identity */
+    // EVP_PKEY identity
     int legacy_keytype;
-    /* Method associated with this operation */
+    // Method associated with this operation
     const EVP_PKEY_METHOD *pmeth;
-    /* Engine that implements this method or NULL if builtin */
+    // Engine that implements this method or NULL if builtin
     ENGINE *engine;
-    /* Key: may be NULL */
+    // Key: may be NULL
     EVP_PKEY *pkey;
-    /* Peer key for key agreement, may be NULL */
+    // Peer key for key agreement, may be NULL
     EVP_PKEY *peerkey;
-    /* Algorithm specific data */
+    // Algorithm specific data
     void *data;
-    /* Indicator if digest_custom needs to be called */
+    // Indicator if digest_custom needs to be called
     unsigned int flag_call_digest_custom:1;
-    /*
-     * Used to support taking custody of memory in the case of a provider being
-     * used with the deprecated EVP_PKEY_CTX_set_rsa_keygen_pubexp() API. This
-     * member should NOT be used for any other purpose and should be removed
-     * when said deprecated API is excised completely.
-     */
-    BIGNUM *rsa_pubexp;
-} /* EVP_PKEY_CTX */ ;
 
+     // Used to support taking custody of memory in the case of a provider being
+     // used with the deprecated EVP_PKEY_CTX_set_rsa_keygen_pubexp() API. This
+     // member should NOT be used for any other purpose and should be removed
+     // when said deprecated API is excised completely.
+
+    BIGNUM *rsa_pubexp;
+} // EVP_PKEY_CTX  ;
+*/
 
 #include "_cgo_export.h"
 
@@ -876,44 +875,44 @@ int X_X509_set_version(X509 *x, long version) {
 }
 
 # define OSSL_MAX_NAME_SIZE           50 /* Algorithm name */
-
+/*
 typedef struct {
     OSSL_LIB_CTX *libctx;
     char *propq;
     RSA *rsa;
     int operation;
 
-    /*
+
      * Flag to determine if the hash function can be changed (1) or not (0)
      * Because it's dangerous to change during a DigestSign or DigestVerify
      * operation, this flag is cleared by their Init function, and set again
      * by their Final function.
-     */
     unsigned int flag_allow_md: 1;
     unsigned int mgf1_md_set: 1;
 
-    /* main digest */
+    // main digest
     EVP_MD *md;
     EVP_MD_CTX *mdctx;
     int mdnid;
-    char mdname[OSSL_MAX_NAME_SIZE]; /* Purely informational */
+    char mdname[OSSL_MAX_NAME_SIZE]; // Purely informational
 
-    /* RSA padding mode */
+    // RSA padding mode
     int pad_mode;
-    /* message digest for MGF1 */
+    /// message digest for MGF1
     EVP_MD *mgf1_md;
     int mgf1_mdnid;
-    char mgf1_mdname[OSSL_MAX_NAME_SIZE]; /* Purely informational */
-    /* PSS salt length */
+    char mgf1_mdname[OSSL_MAX_NAME_SIZE]; // Purely informational
+    // PSS salt length
     int saltlen;
-    /* Minimum salt length or -1 if no PSS parameter restriction */
+    // Minimum salt length or -1 if no PSS parameter restriction
     int min_saltlen;
 
-    /* Temp buffer */
+    // Temp buffer
     unsigned char *tbuf;
 
 } PROV_RSA_CTX_TMP;
-
+*/
+/*
 int X_EVP_VerifyFinal_ex(EVP_MD_CTX *ctx, const unsigned char *sigbuf,
                        unsigned int siglen, EVP_PKEY *pkey)
 {
@@ -975,6 +974,99 @@ int X_EVP_VerifyFinal_ex(EVP_MD_CTX *ctx, const unsigned char *sigbuf,
     printf("\ndone EVP_PKEY_verify\n");
 
 err:
+    EVP_PKEY_CTX_free(pkctx);
+    return i;
+
+}
+*/
+
+struct evp_pkey_ctx_st {
+    /* Method associated with this operation */
+    const EVP_PKEY_METHOD *pmeth;
+    /* Engine that implements this method or NULL if builtin */
+    ENGINE *engine;
+    /* Key: may be NULL */
+    EVP_PKEY *pkey;
+    /* Peer key for key agreement, may be NULL */
+    EVP_PKEY *peerkey;
+    /* Actual operation */
+    int operation;
+    /* Algorithm specific data */
+    void *data;
+    /* Application specific data */
+    void *app_data;
+    /* Keygen callback */
+    EVP_PKEY_gen_cb *pkey_gencb;
+    /* implementation specific keygen data */
+    int *keygen_info;
+    int keygen_info_count;
+} /* EVP_PKEY_CTX */ ;
+
+
+typedef struct {
+    /* Key gen parameters */
+    int nbits;
+    BIGNUM *pub_exp;
+    int primes;
+    /* Keygen callback info */
+    int gentmp[2];
+    /* RSA padding mode */
+    int pad_mode;
+    /* message digest */
+    const EVP_MD *md;
+    /* message digest for MGF1 */
+    const EVP_MD *mgf1md;
+    /* PSS salt length */
+    int saltlen;
+    /* Minimum salt length or -1 if no PSS parameter restriction */
+    int min_saltlen;
+    /* Temp buffer */
+    unsigned char *tbuf;
+    /* OAEP label */
+    unsigned char *oaep_label;
+    size_t oaep_labellen;
+} RSA_PKEY_CTX;
+
+int X_EVP_VerifyFinal_ex(EVP_MD_CTX *ctx, const unsigned char *sigbuf,
+                    unsigned int siglen, EVP_PKEY *pkey)
+{
+    unsigned char m[EVP_MAX_MD_SIZE];
+    unsigned int m_len = 0;
+    int i = 0;
+    EVP_PKEY_CTX *pkctx = NULL;
+
+    if (EVP_MD_CTX_test_flags(ctx, EVP_MD_CTX_FLAG_FINALISE)) {
+        if (!EVP_DigestFinal_ex(ctx, m, &m_len))
+            goto err;
+    } else {
+        int rv = 0;
+        EVP_MD_CTX *tmp_ctx = EVP_MD_CTX_new();
+        if (tmp_ctx == NULL) {
+            EVPerr(EVP_F_EVP_VERIFYFINAL, ERR_R_MALLOC_FAILURE);
+            return 0;
+        }
+        rv = EVP_MD_CTX_copy_ex(tmp_ctx, ctx);
+        if (rv)
+            rv = EVP_DigestFinal_ex(tmp_ctx, m, &m_len);
+        EVP_MD_CTX_free(tmp_ctx);
+        if (!rv)
+            return 0;
+    }
+
+    i = -1;
+    pkctx = EVP_PKEY_CTX_new(pkey, NULL);
+    if (pkctx == NULL)
+        goto err;
+    if (EVP_PKEY_verify_init(pkctx) <= 0)
+        goto err;
+    if (EVP_PKEY_CTX_set_signature_md(pkctx, EVP_MD_CTX_md(ctx)) <= 0)
+        goto err;
+
+    RSA_PKEY_CTX *rctx = pkctx->data;
+    rctx->pad_mode = RSA_PKCS1_PSS_PADDING;
+
+    i = EVP_PKEY_verify(pkctx, sigbuf, siglen, m, m_len);
+ err:
     EVP_PKEY_CTX_free(pkctx);
     return i;
 }

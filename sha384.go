@@ -37,7 +37,7 @@ func (s *SHA384Hash) Close() {
 }
 
 func (s *SHA384Hash) Reset() error {
-	if 1 != C.X_EVP_DigestInit_ex(s.ctx, C.X_EVP_SHA384(), engineRef(s.engine)) {
+	if 1 != C.X_EVP_DigestInit_ex(s.ctx, C.X_EVP_sha384(), engineRef(s.engine)) {
 		return errors.New("openssl: SHA384: cannot init digest ctx")
 	}
 	return nil

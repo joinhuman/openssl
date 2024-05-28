@@ -715,12 +715,12 @@ const EVP_MD *X_EVP_ripemd160() {
 	return EVP_ripemd160();
 }
 
-const EVP_MD *X_EVP_sha224() {
-	return EVP_sha224();
-}
-
 const EVP_MD *X_EVP_sha1() {
 	return EVP_sha1();
+}
+
+const EVP_MD *X_EVP_sha224() {
+	return EVP_sha224();
 }
 
 const EVP_MD *X_EVP_sha256() {

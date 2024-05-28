@@ -263,6 +263,7 @@ func (c *Certificate) SetPubKey(pubKey PublicKey) error {
 // Accepted digest names are 'sha256', 'sha384', and 'sha512'.
 func (c *Certificate) Sign(privKey PrivateKey, digest EVP_MD) error {
 	switch digest {
+	case EVP_SHA224:
 	case EVP_SHA256:
 	case EVP_SHA384:
 	case EVP_SHA512:

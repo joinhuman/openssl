@@ -21,7 +21,7 @@ package openssl
 // #cgo linux windows pkg-config: libssl libcrypto
 // #cgo linux LDFLAGS: -L/usr/lib/x86_64-linux-gnu -lssl -lcrypto
 // #cgo linux CFLAGS: -I/usr/include -Wno-deprecated-declarations
-// #cgo darwin CFLAGS: -I/usr/local/opt/openssl@3.0/include   -Wno-deprecated-declarations
-// #cgo darwin LDFLAGS: -L/usr/local/opt/openssl@3.0/lib -lssl -lcrypto
+// #cgo darwin CFLAGS: -I/usr/local/opt/openssl@1.1/include   -Wno-deprecated-declarations
+// #cgo darwin LDFLAGS: -L/usr/local/opt/openssl@1.1/lib -lssl -lcrypto
 // #cgo windows CFLAGS: -DWIN32_LEAN_AND_MEAN
 import "C"
